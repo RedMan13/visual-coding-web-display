@@ -9,11 +9,12 @@
     <h1>Sanity Check</h1>
     <p>This page will fail to work properly if VCWD is not built.</p>
     <p>Below should be the result of the sanityCheck function in VCWD:</p>
-    <script src="../../dist/main.js"></script>
     <script>
-        const result = VCWD.sanityCheck(1);
-        console.log(result);
-        document.body.innerHTML += `<p>${result}</p>`;
+        document.addEventListener('DOMContentLoaded', () => {
+            const result = VCWD.sanityCheck(1);
+            console.log(result);
+            document.body.innerHTML += `<p>${result}</p>`;
+        });
     </script>
 </body>
 </html>

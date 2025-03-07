@@ -1,6 +1,8 @@
 export default {
     testEnvironment: 'jsdom',
-    transform: {},
+    transform: {
+        "^.+\\.ne$": "jest-transform-nearley"
+    },
     moduleNameMapper: {
         '\\.css$': 'identity-obj-proxy', // CSS imports
     },
