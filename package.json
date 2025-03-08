@@ -4,6 +4,7 @@
   "description": "Visual Coding Web Display or VCWD is a rewrite of Blockly by Google using Canvas APIs under the MIT license.",
   "source": "src/index.js",
   "main": "dist/main.js",
+  "type": "module",
   "directories": {
     "doc": "docs",
     "test": "test"
@@ -32,6 +33,7 @@
   },
   "homepage": "https://github.com/JeremyGamer13/visual-coding-web-display#readme",
   "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
     "babel-loader": "^10.0.0",
     "cross-env": "^7.0.3",
     "html-webpack-plugin": "^5.6.3",
@@ -39,9 +41,8 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-transform-nearley": "^2.0.0",
     "nearley-loader": "^2.0.0",
-    "@babel/preset-env": "^7.26.9",
-    "webpack-dev-server": "^5.2.0",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
   },
   "dependencies": {
     "nearley": "^2.20.1"

@@ -16,10 +16,12 @@ module.exports = {
     ],
     module: {
         rules: [
+            /*
             {
                 test: /\.ne(arley)?$/,
                 use: ['nearley-loader'],
             },
+            */
             {
                 test: /\.(?:js|mjs|cjs)$/,
                 exclude: /node_modules/,
