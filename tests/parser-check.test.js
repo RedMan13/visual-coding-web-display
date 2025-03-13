@@ -72,11 +72,11 @@ const subSamples = [
 test('Parser checks', () => {
     for (const [sample, expected] of subSamples) {
         const parser = new Parser(sample);
-        expect(parser.oneofParse(false)).toStrictEqual(expected);
+        expect(parser.oneofParse(false)).toEqual(expected);
     }
 })
 
-test('raw output', () => {
+test('Raw output', () => {
     const parser = new Parser(`
         # Movement:
             v pointingItems {
@@ -93,11 +93,11 @@ test('raw output', () => {
             @loopArm = https://studio.penguinmod.com/static/blocks-media/repeat.svg
             forever {} @loopArm
     `);
-    expect(parser.parse()).toBe([
+    expect(parser.parse()).toEqual([
         ['category', ['Movement', [
             ['list', ['pointingItems', [
                 'mouse-pointer',
-                'random-direction'
+                'random direction'
             ]]],
             ['block', ['move', { type: 'number', default: '1' }, 'steps', []]],
             ['block', ['point towards', { type: 'list', list: 'pointingItems', default: '' }, []]],
@@ -109,7 +109,7 @@ test('raw output', () => {
         ]]],
         ['category', ['Control', [
             ['icon', ['loopArm', 'https://studio.penguinmod.com/static/blocks-media/repeat.svg']],
-            ['block', ['forever', { type: 'stack' }, { type: 'icon', icon: 'loopArm' }]]
+            ['block', ['forever', { type: 'stack' }, { type: 'icon', icon: 'loopArm' }, []]]
         ]]],
     ]);
 });

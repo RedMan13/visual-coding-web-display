@@ -54,6 +54,7 @@ export class Parser {
             if (urlEnd === -1) return 'Missing line delimeter';
             const url = this.str.slice(0, urlEnd);
             this.str = this.str.slice(urlEnd);
+            if (this.str[0] === '/') return `${url}, ${urlEnd}`
             return [variable, url];
         }],
         /** @typedef {[string, string[]]} ListMatch */
@@ -107,7 +108,7 @@ export class Parser {
 
     lineCap = '\n';
     /** @param {string} str */
-    constructor(str) { this.str = str; }
+    constructor(str) { this.str = str; this.src = str; }
 
     /**
      * Parses the block definition out of a string
@@ -132,12 +133,12 @@ export class Parser {
             parse[parse.length -1] += this.str[i];
         }
         this.str = this.str.slice(i);
-        const endIdx = this.str.indexOf(this.lineCap) === -1 ? this.str.length : this.str.indexOf(this.lineCap);
+        const endIdx = this.str.indexOf('\n') === -1 ? this.str.length : this.str.indexOf('\n');
         if (this.str.startsWith('::')) {
             const args = this.str.slice(2, endIdx);
             this.str = this.str.slice(endIdx);
             parse.push(args.split(/\s+/).filter(Boolean));
-        }
+        } else parse.push([])
     
         return parse.map(str => str?.trim?.() ?? str).filter(Boolean);
     }
@@ -160,6 +161,7 @@ export class Parser {
                 return [name, result, str.length - this.str.length]
             })
             .filter(Boolean);
+        this.str = str;
         if (!matches.length && !allowBlock) return `No matchers found for ${str.slice(0, 50).replaceAll(' ', '·').replaceAll('\n', '\\n')} (delim ${this.lineCap.replaceAll(' ', '·').replaceAll('\n', '\\n')})`
         if (matches.every(([, res]) => typeof (res ?? '') === 'string')) {
             const errors = matches.map(([name, res]) => `${name} "${res}"`);
@@ -181,7 +183,7 @@ export class Parser {
         const members = [];
         while (this.str.length) {
             const match = this.oneofParse(false);
-            if (typeof (match ?? '') === 'string') return `${match} (HEAD parse ${JSON.stringify(members)})`;
+            if (typeof (match ?? '') === 'string') return `${match} (@char ${this.length - this.src.length})`;
             members.push(match);
             if (/^\s*$/.test(this.str)) break;
         }
