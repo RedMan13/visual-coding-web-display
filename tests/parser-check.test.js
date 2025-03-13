@@ -1,58 +1,39 @@
-import { parse, parseBlockDef, parseIconDef, parseCategoryDef, parseListDef } from "../src/toolbox";
-const sample = `
-# Movement:
-    v pointingItems {
-        mouse-pointer,
-        random direction,
-    }
-    move (1) steps
-    point towards [v pointingItems]
-    if on edge, bounce
-# Events:
-    @greenFlag = https://studio.penguinmod.com/static/blocks-media/blue-flag.svg
-    when @greenFlag pressed :: hat
-# Control:
-    @loopArm = https://studio.penguinmod.com/static/blocks-media/repeat.svg
-    forever {} @loopArm
-`.replaceAll('\n', '');
+import { Parser } from "../src/toolbox";
 
-test('List Definition', () => {
-    expect(parseListDef(`
+const subSamples = [
+    [`V skibidi { gyatt }`, ['list', ['skibidi', ['gyatt']]]],
+    [`
         V skibidi { 
-            gyatt 
+            rizz 
         }
-    `)).toStrictEqual([50, ['skibidi', ['gyatt']]]);
-
-    expect(parseListDef(`
+    `, ['list', ['skibidi', ['rizz']]]],
+    [`
         V skibidi { 
             gyatt,
             ohio
         }
-    `)).toStrictEqual([67, ['skibidi', ['gyatt', 'ohio']]]);
-
-    expect(parseListDef(`
+    `, ['list', ['skibidi', ['gyatt', 'ohio']]]],
+    [`
         V skibidi { 
             gyatt,
             ohio, rizz
         }
-    `)).toStrictEqual([73, ['skibidi', ['gyatt', 'ohio', 'rizz']]]);
-    
-    expect(parseListDef(`
+    `, ['list', ['skibidi', ['gyatt', 'ohio', 'rizz']]]],
+    [`
         V skibidi { 
-            gyatt,
+            ohio,
         }
-    `)).toStrictEqual([50, ['skibidi', ['gyatt']]]);
-
-    expect(parseListDef(`
+    `, ['list', ['skibidi', ['ohio']]]],
+    [`
         V skibidi { 
             gyatt,
             ohio\\, rizz
         }
-    `)).toStrictEqual([74, ['skibidi', ['gyatt', 'ohio, rizz']]]);
+    `, ['list', ['skibidi', ['gyatt', 'ohio, rizz']]]],
 
-    expect(parseListDef('@icon = /static/loop.svg\n'))
-        .toStrictEqual('Not a list');
-    expect(parseListDef(`
+    ['@icon = /static/loop.svg\n', ['icon', ['icon', '/static/loop.svg']]],
+
+    [`
         # Events:
             V skibidi { 
                 gyatt,
@@ -60,44 +41,12 @@ test('List Definition', () => {
             }
             @greenFlag = https://studio.penguinmod.com/static/blocks-media/blue-flag.svg
             when @greenFlag pressed :: hat
-    `)).toStrictEqual('Not a list');
-});
-
-test('Icon Definition', () => {
-    expect(parseIconDef('@icon = /static/loop.svg\n', '\n'))
-        .toStrictEqual([24, ['icon', '/static/loop.svg']]);
-    expect(parseIconDef('@icon = /static/loop.svg ', ' '))
-        .toStrictEqual([24, ['icon', '/static/loop.svg']]);
-
-    expect(parseIconDef(`V skibidi { gyatt } `, ' '))
-        .toStrictEqual('Not an icon');
-    expect(parseIconDef(`
-        # Events:
-            V skibidi { 
-                gyatt,
-                ohio\\, rizz
-            }
-            @greenFlag = https://studio.penguinmod.com/static/blocks-media/blue-flag.svg
-            when @greenFlag pressed :: hat
-    `)).toStrictEqual('Not an icon');
-});
-
-test('Category Definition', () => {
-    expect(parseCategoryDef(`
-        # Events:
-            V skibidi { 
-                gyatt,
-                ohio\\, rizz
-            }
-            @greenFlag = https://studio.penguinmod.com/static/blocks-media/blue-flag.svg
-            when @greenFlag pressed :: hat
-    `)).toStrictEqual([240, ['Events', [
-        ['skibidi', ['gyatt', 'ohio, rizz']],
-        ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg'], 
-        "when @greenFlag pressed :: hat"
-    ]]]);
-
-    expect(parseCategoryDef(`
+    `, ['category', ['Events', [
+        ['list', ['skibidi', ['gyatt', 'ohio, rizz']]],
+        ['icon', ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg']], 
+        ['block', ['when', { type: 'icon', icon: 'greenFlag' }, 'pressed', ['hat']]]
+    ]]]],
+    [`
         # Events:
             V skibidi { 
                 gyatt,
@@ -113,18 +62,54 @@ test('Category Definition', () => {
             move (1) steps
             point towards [v pointingItems]
             if on edge, bounce
-    `)).toStrictEqual([240, ['Events', [
-        ['skibidi', ['gyatt', 'ohio, rizz']],
-        ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg'], 
-        "when @greenFlag pressed :: hat"
-    ]]]);
+    `, ['category', ['Events', [
+        ['list', ['skibidi', ['gyatt', 'ohio, rizz']]],
+        ['icon', ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg']], 
+        ['block', ['when', { type: 'icon', icon: 'greenFlag' }, 'pressed', ['hat']]]
+    ]]]]
+];
 
-    expect(parseCategoryDef('@icon = /static/loop.svg\n'))
-        .toStrictEqual('Not a category');
-    expect(parseCategoryDef(`V skibidi { gyatt } `, ' '))
-        .toStrictEqual('Not a category');
+test('Parser checks', () => {
+    for (const [sample, expected] of subSamples) {
+        const parser = new Parser(sample);
+        expect(parser.oneofParse(false)).toStrictEqual(expected);
+    }
 })
 
 test('raw output', () => {
-    //expect(parse(sample)).toBe(null);
+    const parser = new Parser(`
+        # Movement:
+            v pointingItems {
+                mouse-pointer,
+                random direction,
+            }
+            move (1) steps
+            point towards [v pointingItems]
+            if on edge, bounce
+        # Events:
+            @greenFlag = https://studio.penguinmod.com/static/blocks-media/blue-flag.svg
+            when @greenFlag pressed :: hat
+        # Control:
+            @loopArm = https://studio.penguinmod.com/static/blocks-media/repeat.svg
+            forever {} @loopArm
+    `);
+    expect(parser.parse()).toBe([
+        ['category', ['Movement', [
+            ['list', ['pointingItems', [
+                'mouse-pointer',
+                'random-direction'
+            ]]],
+            ['block', ['move', { type: 'number', default: '1' }, 'steps', []]],
+            ['block', ['point towards', { type: 'list', list: 'pointingItems', default: '' }, []]],
+            ['block', ['if on edge, bounce', []]]
+        ]]],
+        ['category', ['Events', [
+            ['icon', ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg']],
+            ['block', ['when', { type: 'icon', icon: 'greenFlag' }, 'pressed', ['hat']]]
+        ]]],
+        ['category', ['Control', [
+            ['icon', ['loopArm', 'https://studio.penguinmod.com/static/blocks-media/repeat.svg']],
+            ['block', ['forever', { type: 'stack' }, { type: 'icon', icon: 'loopArm' }]]
+        ]]],
+    ]);
 });
