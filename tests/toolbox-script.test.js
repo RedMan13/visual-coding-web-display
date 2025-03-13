@@ -1,4 +1,4 @@
-import { Parser } from "../src/toolbox";
+import { Parser, understandParse } from "../src/toolbox";
 
 const subSamples = [
     [`V skibidi { gyatt }`, ['list', ['skibidi', ['gyatt']]]],
@@ -113,3 +113,50 @@ test('Raw output', () => {
         ]]],
     ]);
 });
+
+test('Runtime Generator', () => {
+    expect(understandParse([
+        ['category', ['Movement', [
+            ['list', ['pointingItems', [
+                'mouse-pointer',
+                'random direction'
+            ]]],
+            ['block', ['move', { type: 'number', default: '1' }, 'steps', []]],
+            ['block', ['point towards', { type: 'list', list: 'pointingItems', default: '' }, []]],
+            ['block', ['if on edge, bounce', []]]
+        ]]],
+        ['category', ['Events', [
+            ['icon', ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg']],
+            ['block', ['when', { type: 'icon', icon: 'greenFlag' }, 'pressed', ['hat']]]
+        ]]],
+        ['category', ['Control', [
+            ['icon', ['loopArm', 'https://studio.penguinmod.com/static/blocks-media/repeat.svg']],
+            ['block', ['forever', { type: 'stack' }, { type: 'icon', icon: 'loopArm' }, []]]
+        ]]],
+    ])).toEqual(Object.assign([], {
+        vars: {},
+        0: { name: 'Movement', content: Object.assign([], {
+            vars: {
+                pointingItems: [
+                    'mouse-pointer',
+                    'random direction'
+                ]
+            },
+            0: ['move', { type: 'number', default: '1' }, 'steps', []],
+            1: ['point towards', { type: 'list', list: 'pointingItems', default: '' }, []],
+            2: ['if on edge, bounce', []]
+        }) },
+        1: { name: 'Events', content: Object.assign([], {
+            vars: {
+                greenFlag: 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg',
+            },
+            0: ['when', { type: 'icon', icon: 'greenFlag' }, 'pressed', ['hat']]
+        }) },
+        2: { name: 'Control', content: Object.assign([], {
+            vars: {
+                loopArm: 'https://studio.penguinmod.com/static/blocks-media/repeat.svg'
+            },
+            0: ['forever', { type: 'stack' }, { type: 'icon', icon: 'loopArm' }, []]
+        }) }
+    }))
+})

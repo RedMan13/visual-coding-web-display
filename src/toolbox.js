@@ -40,7 +40,7 @@ const matchVar = /[_a-z][_$a-z0-9]*/i;
 
 export class Parser {
     /** @type {{ [key: string]: [string[], Function] }} */
-    static parsers = {
+    static tokens = {
         /** @typedef {[string, string]} IconMatch */
         icon: [['@'], function() {
             const variable = this.str.match(matchVar)?.[0];
@@ -74,7 +74,7 @@ export class Parser {
                 .filter(Boolean);
             return [variable, items];
         }],
-        /** @typedef {[string, (ParseResult<[string, string]>|ParseResult<[string, string[]]>)[]]} CategoryMatch */
+        /** @typedef {[string, ParseResult<IconMatch|ListMatch|CategoryMatch|LabelMatch>[]]} CategoryMatch */
         category: [['#'], function() {
             const titleEnd = this.str.match(/(?<!\\):/)?.index;
             if (typeof titleEnd !== 'number') return 'Missing title end';
@@ -93,6 +93,21 @@ export class Parser {
             this.lineCap = '\n';
         
             return [title, members];
+        }],
+        /** @typedef {[boolean, string]} LabelMatch */
+        label: [['//'], function() {
+            const endIdx = this.str.indexOf(this.lineCap);
+            if (endIdx === -1) return 'Missing line delimeter';
+            let text = this.str.slice(0, endIdx).trim(), onClick = null;
+            this.str = this.str.slice(endIdx);
+            if (text[0] === '%') {
+                text = text.slice(1).trimStart();
+                const func = text.match(matchVar)?.[0];
+                if (!func) return 'Missing function name when assigning for button';
+                text = text.slice(func.length).trimStart();
+                onClick = func;
+            }
+            return [onClick, text];
         }]
     }
     static blockInputs = {
@@ -105,6 +120,7 @@ export class Parser {
         stack:     /^{\s*}/i,
         icon:      /^@\s*(?<icon>[_a-z][_$a-z0-9]*)/i
     }
+    static blockPostProcess = {}
 
     lineCap = '\n';
     /** @param {string} str */
@@ -150,14 +166,14 @@ export class Parser {
     oneofParse(allowBlock = true) {
         this.str = this.str.trimStart();
         const str = this.str;
-        const matches = Object.keys(Parser.parsers)
+        const matches = Object.keys(Parser.tokens)
             .map(name => {
                 this.str = str;
-                const symbol = Parser.parsers[name][0]
+                const symbol = Parser.tokens[name][0]
                     .find(initial => this.str.startsWith(initial));
                 if (!symbol) return;
                 this.str = this.str.slice(symbol.length).trimStart();
-                const result = Parser.parsers[name][1].apply(this);
+                const result = Parser.tokens[name][1].apply(this);
                 return [name, result, str.length - this.str.length]
             })
             .filter(Boolean);
@@ -179,6 +195,10 @@ export class Parser {
         return match;
     }
 
+    /**
+     * Get any and all parsable members from the string
+     * @returns {ParseResult<IconMatch|ListMatch|CategoryMatch|LabelMatch>[]}
+     */
     parse() {
         const members = [];
         while (this.str.length) {
@@ -189,4 +209,27 @@ export class Parser {
         }
         return members;
     }
+}
+
+export const tokenHandles = {
+    icon([variable, url], gen) { gen.vars[variable] = url; },
+    list([variable, list], gen) { gen.vars[variable] = list; },
+    category([name, contents], gen) { gen.push({ name, content: understandParse(contents) }); },
+    label([onClick, label], gen) { gen.push({ label, onClick }); },
+    block(block, gen) { gen.push(block); }
+}
+/**
+ * Generates meaningful runtime data out of parse results
+ * @param {ParseResult<IconMatch|ListMatch|CategoryMatch|LabelMatch>[]} parse 
+ * @returns {{ [key: (string|number)]: any, vars: { [key: string]: string } }}
+ */
+export function understandParse(parse) {
+    const gen = [];
+    gen.vars = {};
+    for (const [name, value] of parse) {
+        const handle = tokenHandles[name] 
+        if (typeof handle !== 'function') throw new TypeError(`Unregistered token name ${name}`);
+        handle(value, gen);
+    }
+    return gen;
 }
