@@ -32,9 +32,12 @@ const subSamples = [
     `, ['list', ['skibidi', ['gyatt', 'ohio, rizz']]]],
 
     ['@icon = /static/loop.svg\n', ['icon', ['icon', '/static/loop.svg']]],
+    ['// basic funny things\n', ['label', [null, 'basic funny things']]],
+    ['// %idosometh basic funny things\n', ['label', ['idosometh', 'basic funny things']]],
 
     [`
         # Events:
+            // basic funny things
             V skibidi { 
                 gyatt,
                 ohio\\, rizz
@@ -42,6 +45,7 @@ const subSamples = [
             @greenFlag = https://studio.penguinmod.com/static/blocks-media/blue-flag.svg
             when @greenFlag pressed :: hat
     `, ['category', ['Events', [
+        ['label', [null, 'basic funny things']],
         ['list', ['skibidi', ['gyatt', 'ohio, rizz']]],
         ['icon', ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg']], 
         ['block', ['when', { type: 'icon', icon: 'greenFlag' }, 'pressed', ['hat']]]
@@ -52,6 +56,7 @@ const subSamples = [
                 gyatt,
                 ohio\\, rizz
             }
+            // basic funny things
             @greenFlag = https://studio.penguinmod.com/static/blocks-media/blue-flag.svg
             when @greenFlag pressed :: hat
         # Movement:
@@ -64,6 +69,7 @@ const subSamples = [
             if on edge, bounce
     `, ['category', ['Events', [
         ['list', ['skibidi', ['gyatt', 'ohio, rizz']]],
+        ['label', [null, 'basic funny things']],
         ['icon', ['greenFlag', 'https://studio.penguinmod.com/static/blocks-media/blue-flag.svg']], 
         ['block', ['when', { type: 'icon', icon: 'greenFlag' }, 'pressed', ['hat']]]
     ]]]]
